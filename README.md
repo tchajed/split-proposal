@@ -13,7 +13,7 @@ Add `\pdfbookmark` commands to demarcate your project description section to mak
 - (optional) `\pdfbookmark[0]{Data management plan}{Data management plan}`
 - (optional) `\pdfbookmark[0]{Mentoring plan}{Mentoring plan}`
 
-See <sample/main.tex> for a complete working example.
+See [sample/main.tex](sample/main.tex) for a complete working example.
 
 If you don't have bookmarks, it is assumed your summary is 1 page, description is 15 pages, and the rest of the document is references.
 
