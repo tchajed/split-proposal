@@ -2,36 +2,23 @@
 
 [![CI](https://github.com/tchajed/split-proposal/actions/workflows/ci.yml/badge.svg)](https://github.com/tchajed/split-proposal/actions/workflows/ci.yml)
 
-Split an NSF proposal into submission documents.
+Split an NSF proposal into submission documents (summary, project description, references).
 
-Add `\pdfbookmark` commands to demarcate your project description section to make this reliable:
+## Running
 
-```tex
-\documentclass{article}
+Add `\pdfbookmark` commands to demarcate your project description section to make this reliable. You'll need:
 
-% preamble
+- `\pdfbookmark[0]{Project Description}{Project Description}` before the project description
+- `\pdfbookmark[0]{References cited}{References cited}` before references
+- (optional) `\pdfbookmark[0]{Data management plan}{Data management plan}`
+- (optional) `\pdfbookmark[0]{Mentoring plan}{Mentoring plan}`
 
-\begin{document}
-
-\input{summary}
-
-\pdfbookmark[0]{Project Description}{Project Description}
-
-% your project description parts
-\input{intro}
-\input{research}
-
-\newpage
-\pdfbookmark[0]{References cited}{References cited}
-% bibliography commands
-\bibliography{refs}
-\end{document}
-```
+See <sample/main.tex> for a complete working example.
 
 If you don't have bookmarks, it is assumed your summary is 1 page, description is 15 pages, and the rest of the document is references.
 
-Then run on your compiled PDF:
+To split the combined proposal file run:
 
 ```sh
-go run github.com/tchajed/split-proposal@latest - -file main.pdf
+go run github.com/tchajed/split-proposal@latest -file main.pdf
 ```
