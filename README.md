@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/tchajed/split-proposal/actions/workflows/ci.yml/badge.svg)](https://github.com/tchajed/split-proposal/actions/workflows/ci.yml)
 
-Split an NSF proposal into submission documents (summary, project description, references).
+Split an NSF proposal into submission documents for summary, project description, and references. Keeps bookmarks (table of contents in your PDF viewer)in the description.
 
 ## Running
 
@@ -22,3 +22,7 @@ To split the combined proposal file run:
 ```sh
 go run github.com/tchajed/split-proposal@latest -file main.pdf
 ```
+
+## Why?
+
+Because automation. Preserving bookmarks while splitting is surprisingly difficult without using a PDF library.
