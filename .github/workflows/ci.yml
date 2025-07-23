@@ -15,8 +15,6 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-      - name: Build
-        run: go build .
       - name: Test
         run: go test -v ./...
       - name: Check style
@@ -27,6 +25,7 @@ jobs:
         uses: xu-cheng/latex-action@v4
         with:
           root_file: sample/main.tex
+          work_in_root_file_dir: true
       - name: Run test
         run: |
           ./etc/ci-test.sh
