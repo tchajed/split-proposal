@@ -35,8 +35,3 @@ Then run on your compiled PDF:
 ```sh
 go run github.com/tchajed/split-proposal@latest - -file main.pdf
 ```
-
-## Future work
-
-- Split data management plan, collaboration plan, and mentoring plan if found.
-- Test on a sample PDF in CI.
