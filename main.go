@@ -84,22 +84,22 @@ func pageCount(rs io.ReadSeeker, conf *model.Configuration) (int, error) {
 	return info.PageCount, nil
 }
 
-func extractPages(rs io.ReadSeeker, bookmarks []pdfcpu.Bookmark, startPageNr int, endPageNr int, conf *model.Configuration) (bytes.Buffer, error) {
-	if endPageNr < 0 {
+func extractPages(rs io.ReadSeeker, bookmarks []pdfcpu.Bookmark, r pageRange, conf *model.Configuration) (bytes.Buffer, error) {
+	if r.end < 0 {
 		count, err := pageCount(rs, conf)
 		if err != nil {
 			return bytes.Buffer{}, err
 		}
-		endPageNr = count
+		r.end = count
 	}
-	newBookmarks := bookmarksInRange(bookmarks, startPageNr, endPageNr)
-	subtractFromPage(newBookmarks, startPageNr-1)
+	newBookmarks := bookmarksInRange(bookmarks, r.start, r.end)
+	subtractFromPage(newBookmarks, r.start-1)
 	var buf bytes.Buffer
-	err := api.Trim(rs, &buf, []string{fmt.Sprintf("%d-%d", startPageNr, endPageNr)}, conf)
+	err := api.Trim(rs, &buf, []string{fmt.Sprintf("%d-%d", r.start, r.end)}, conf)
 	if err != nil {
 		return bytes.Buffer{}, fmt.Errorf("could not select pages: %w", err)
 	}
-	newBuf, applyErr := applyBookmarks(bytes.NewReader(buf.Bytes()), bookmarks, startPageNr, endPageNr)
+	newBuf, applyErr := applyBookmarks(bytes.NewReader(buf.Bytes()), bookmarks, r.start, r.end)
 	if applyErr != nil {
 		fmt.Fprintf(os.Stderr, "WARN: %v\n", applyErr)
 	} else {
@@ -123,6 +123,17 @@ func (br pageRange) String() string {
 var descriptionRe = regexp.MustCompile(`(?i)project\s+description`)
 var summaryRe = regexp.MustCompile(`(?i)(project\s+)?summary`)
 var referencesRe = regexp.MustCompile(`(?i)references(\s+cited)?`)
+var dataManagementPlanRe = regexp.MustCompile(`(?i)data\s+management\s+plan?`)
+var mentoringPlanRe = regexp.MustCompile(`(?i)mentoring\s+plan?`)
+
+func hasSection(titleRe *regexp.Regexp, bookmarks []pdfcpu.Bookmark) bool {
+	for _, b := range bookmarks {
+		if titleRe.MatchString(b.Title) {
+			return true
+		}
+	}
+	return false
+}
 
 func bookmarkRange(r *regexp.Regexp, bookmarks []pdfcpu.Bookmark, defaultRange pageRange) pageRange {
 	for i, b := range bookmarks {
@@ -147,43 +158,48 @@ func splitPdf(rs io.ReadSeeker, outDir string) error {
 		return fmt.Errorf("could not read PDF bookmarks: %w", err)
 	}
 
-	var buf bytes.Buffer
-
-	// summary
-	r := bookmarkRange(summaryRe, bookmarks, pageRange{1, 1})
-	fmt.Printf("summary: %v\n", r)
-	buf, err = extractPages(rs, bookmarks, r.start, r.end, conf)
-	if err != nil {
-		return fmt.Errorf("could not extract summary: %w", err)
-	}
-	err = os.WriteFile(filepath.Join(outDir, "submit-project-summary.pdf"), buf.Bytes(), 0644)
-	if err != nil {
-		return fmt.Errorf("could not write output PDF: %w", err)
-	}
-
-	// description
-	r = bookmarkRange(descriptionRe, bookmarks, pageRange{2, 16})
-	fmt.Printf("description: %v\n", r)
-	buf, err = extractPages(rs, bookmarks, r.start, r.end, conf)
-	if err != nil {
-		return fmt.Errorf("could not extract description: %w", err)
-	}
-	err = os.WriteFile(filepath.Join(outDir, "submit-project-description.pdf"), buf.Bytes(), 0644)
-	if err != nil {
-		return fmt.Errorf("could not write output PDF: %w", err)
+	splitSection := func(name string, titleRe *regexp.Regexp, defaultRange pageRange) error {
+		r := bookmarkRange(titleRe, bookmarks, defaultRange)
+		if r.start <= 0 {
+			return fmt.Errorf("section %s not found", name)
+		}
+		fmt.Printf("%s: %v\n", name, r)
+		buf, err := extractPages(rs, bookmarks, r, conf)
+		if err != nil {
+			return fmt.Errorf("could not extract %s: %w", name, err)
+		}
+		err = os.WriteFile(filepath.Join(outDir, fmt.Sprintf("submit-%s.pdf", name)), buf.Bytes(), 0644)
+		if err != nil {
+			return fmt.Errorf("could not write output PDF: %w", err)
+		}
+		return nil
 	}
 
-	// references
-	r = bookmarkRange(referencesRe, bookmarks, pageRange{17, -1})
-	fmt.Printf("references: %v\n", r)
-	buf, err = extractPages(rs, bookmarks, r.start, r.end, conf)
+	err = splitSection("summary", summaryRe, pageRange{1, 1})
 	if err != nil {
-		return fmt.Errorf("could not extract references: %w", err)
+		return err
 	}
-	err = os.WriteFile(filepath.Join(outDir, "submit-references.pdf"), buf.Bytes(), 0644)
+	err = splitSection("project-description", descriptionRe, pageRange{2, 16})
 	if err != nil {
-		return fmt.Errorf("could not write output PDF: %w", err)
+		return err
 	}
+	err = splitSection("references", referencesRe, pageRange{17, -1})
+	if err != nil {
+		return err
+	}
+	if hasSection(dataManagementPlanRe, bookmarks) {
+		err = splitSection("data-mgmt-plan", dataManagementPlanRe, pageRange{})
+		if err != nil {
+			return err
+		}
+	}
+	if hasSection(mentoringPlanRe, bookmarks) {
+		err = splitSection("mentoring-plan", mentoringPlanRe, pageRange{})
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

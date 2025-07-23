@@ -1,0 +1,51 @@
+\documentclass[10pt,letterpaper]{article}
+\usepackage{palatino}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{lipsum}
+\usepackage{inconsolata}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[margin=1.02in,footskip=0.25in]{geometry}
+\linespread{1.01}
+
+\renewcommand{\refname}{\hfil References Cited\hfil}
+
+\begin{document}
+\noindent
+\textbf{CAREER: Exploring the Effects of Titles on Reviewers of Grant Proposals}
+\pagestyle{empty}
+
+%% SUMMARY
+\pdfbookmark[0]{Summary}{Summary}
+\input{summary}
+
+%% DESCRIPTION
+\newpage
+% for submission you wouldn't have page numbers
+\pagestyle{plain}
+\setcounter{page}{1}
+\pdfbookmark[0]{Project Description}{Project Description}
+\input{description}
+
+\newpage
+\pagestyle{empty}
+\pdfbookmark[0]{References cited}{References cited}
+\bibliographystyle{abbrv}
+\bibliography{refs}
+
+\newpage
+\pagestyle{empty}
+\pdfbookmark[0]{Data Management Plan}{Data Management Plan}
+\section*{Data Management Plan}
+\setcounter{page}{1}
+
+We will put everything on GitHub.
+
+\newpage
+\pagestyle{empty}
+\pdfbookmark[0]{Mentoring Plan}{Mentoring Plan}
+\section*{Mentoring Plan}
+\setcounter{page}{1}
+\lipsum
+
+\end{document}
