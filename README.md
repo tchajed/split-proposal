@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/tchajed/split-proposal/actions/workflows/ci.yml/badge.svg)](https://github.com/tchajed/split-proposal/actions/workflows/ci.yml)
 
-Split an NSF proposal into submission documents for summary, project description, and references. Keeps bookmarks (table of contents in your PDF viewer)in the description.
+Split an NSF proposal into submission documents for summary, project description, and references. Keeps bookmarks (table of contents in your PDF viewer) in the description.
 
 ## Running
 
