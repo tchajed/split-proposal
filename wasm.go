@@ -44,6 +44,8 @@ func splitPdfWasmWrapper(this js.Value, args []js.Value) any {
 		// Create result object
 		resultObj := js.Global().Get("Object").New()
 		resultObj.Set("name", result.Name)
+		resultObj.Set("startPage", result.StartPage)
+		resultObj.Set("endPage", result.EndPage)
 		resultObj.Set("data", jsArray)
 
 		jsResults.SetIndex(i, resultObj)
