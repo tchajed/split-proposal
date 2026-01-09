@@ -21,6 +21,9 @@ jobs:
         run: |
           gofmt -w -s .
           git diff --exit-code
+      - name: Build wasm
+        run: |
+          GOOS=js GOARCH=wasm go build -o split-proposal.wasm
       - name: Build LaTeX
         uses: xu-cheng/latex-action@v4
         with:
