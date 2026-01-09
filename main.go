@@ -27,7 +27,11 @@ func splitPdf(rs io.ReadSeeker, outDir string) error {
 		if err != nil {
 			return fmt.Errorf("could not write output PDF %s: %w", result.Name, err)
 		}
-		fmt.Printf("Created %s\n", result.Name)
+		pageRange := fmt.Sprintf("%d-%d", result.StartPage, result.EndPage)
+		if result.EndPage < 0 {
+			pageRange = fmt.Sprintf("%d-end", result.StartPage)
+		}
+		fmt.Printf("%s: %s\n", result.Name, pageRange)
 	}
 
 	return nil
