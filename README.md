@@ -23,6 +23,14 @@ To split the combined proposal file run:
 go run github.com/tchajed/split-proposal@latest -file main.pdf
 ```
 
+## wasm build
+
+There is a work-in-progress wasm build:
+
+```sh
+GOOS=js GOARCH=wasm go build -o split-proposal.wasm
+```
+
 ## Why?
 
 Because automation. Preserving bookmarks while splitting is surprisingly difficult without using a PDF library.
