@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { format } from 'date-fns';
-	import { loadWasm, splitPdf, type SplitOutput } from '$lib/wasm';
+	import { loadWasm, splitPdf } from '$lib/wasm';
 	import uploadIcon from '$lib/assets/upload-icon.svg';
 	import downloadIcon from '$lib/assets/download-icon.svg';
 
