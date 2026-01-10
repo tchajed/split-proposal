@@ -132,12 +132,12 @@
 </script>
 
 <svelte:head>
-	<title>Split Proposal - NSF Proposal PDF Splitter</title>
+	<title>Split NSF proposal</title>
 </svelte:head>
 
 <main>
-	<h1>Split Proposal</h1>
-	<p class="subtitle">Split NSF proposal PDFs into submission documents</p>
+	<h1>Split NSF Proposal</h1>
+	<p class="subtitle">Split a proposal PDF into submission documents</p>
 
 	<div
 		class="drop-zone"
@@ -156,18 +156,20 @@
 			</div>
 		{:else}
 			<div class="drop-content">
-				<img src={uploadIcon} alt="Upload" class="upload-icon" />
+				<img src={uploadIcon} alt="Upload" class="upload-icon" style="inline-block" />
 				<p class="main-text">Drag and drop your PDF here</p>
-				<p class="sub-text">or</p>
-				<label class="file-label">
-					<input
-						type="file"
-						accept=".pdf"
-						onchange={handleFileInput}
-						disabled={!wasmReady || processing}
-					/>
-					<span class="button">Choose File</span>
-				</label>
+				<p class="sub-text">
+					or
+					<label class="file-label">
+						<input
+							type="file"
+							accept=".pdf"
+							onchange={handleFileInput}
+							disabled={!wasmReady || processing}
+						/>
+						<span class="button">Choose File</span>
+					</label>
+				</p>
 			</div>
 		{/if}
 	</div>
@@ -201,22 +203,35 @@
 	{/if}
 
 	<div class="info">
-		<h3>How it works</h3>
 		<p>
-			This tool splits an NSF proposal PDF into separate submission documents. It uses PDF
-			bookmarks to identify sections:
+			This tool splits an NSF proposal PDF into separate submission documents: Project Summary,
+			Project Description, References.
+		</p>
+		<p>
+			For best results, add <code>\pdfbookmark</code> commands to your LaTeX source, which the tool uses
+			to identify section page ranges:
 		</p>
 		<ul>
-			<li>Project Summary (default: page 1)</li>
-			<li>Project Description (default: pages 2-16)</li>
-			<li>References Cited (default: pages 17-end)</li>
-			<li>Data Management Plan (if present)</li>
-			<li>Mentoring Plan (if present)</li>
+			<li>
+				<code>\pdfbookmark[0]&#123;Project Description&#125;&#123;Project Description&#125;</code> before
+				the project description
+			</li>
+			<li>
+				<code>\pdfbookmark[0]&#123;References cited&#125;&#123;References cited&#125;</code> before references
+			</li>
+			<li>
+				(optional) <code
+					>\pdfbookmark[0]&#123;Data management plan&#125;&#123;Data management plan&#125;</code
+				>
+			</li>
+			<li>
+				(optional) <code>\pdfbookmark[0]&#123;Mentoring plan&#125;&#123;Mentoring plan&#125;</code>
+			</li>
 		</ul>
 		<p>
-			For best results, add <code>\pdfbookmark</code> commands to your LaTeX source. See the
-			<a href="https://github.com/tchajed/split-proposal" target="_blank">GitHub repository</a>
-			for details.
+			See this
+			<a href="https://github.com/tchajed/split-proposal/blob/main/sample/main.tex">sample file</a> for
+			a complete example.
 		</p>
 	</div>
 </main>
@@ -256,7 +271,7 @@
 		background: white;
 		transition: all 0.3s ease;
 		cursor: pointer;
-		min-height: 300px;
+		min-height: 100px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -307,7 +322,8 @@
 
 	.button {
 		display: inline-block;
-		padding: 0.75rem 1.5rem;
+		margin: 0 0.5rem;
+		padding: 0.75rem;
 		background: #4a90e2;
 		color: white;
 		border-radius: 6px;
