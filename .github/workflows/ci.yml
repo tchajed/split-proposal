@@ -95,7 +95,7 @@ jobs:
       - name: Build
         working-directory: web
         env:
-          BASE_PATH: '/${{ github.event.repository.name }}'
+          BASE_PATH: "/${{ github.event.repository.name }}"
         run: bun run build
 
       - name: Upload artifact

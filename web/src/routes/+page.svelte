@@ -159,20 +159,19 @@
 		<div class="success">
 			<div class="zip-options">
 				<div class="zip-filename-row">
-					<label for="zip-name">download name:</label>
+					<label for="zip-name">File name:</label>
 					<input type="text" id="zip-name" bind:value={zipBaseName} class="zip-name-input" />
 					<span class="zip-ext">.zip</span>
 				</div>
 				<label class="checkbox-label">
 					<input type="checkbox" bind:checked={includeDateTime} />
-					Add timestamp to filename
+					Add timestamp
 				</label>
 			</div>
 			<a href={splitResults.zipUrl} download={getZipFileName()} class="button zip-button">
-				Download all ({getZipFileName()})
+				Download {getZipFileName()}
 			</a>
 			<ul class="download-list">
-				<li></li>
 				{#each splitResults.downloads as download}
 					<li>
 						<a
@@ -216,7 +215,7 @@
 				<img src={uploadIcon} alt="Upload" class="upload-icon" style="inline-block" />
 				<p class="main-text">Drag and drop your PDF here</p>
 				<p class="sub-text">
-					or
+					or &nbsp;
 					<label class="file-label">
 						<input
 							type="file"
@@ -352,7 +351,6 @@
 
 	.button {
 		display: inline-block;
-		margin: 0 0.5rem;
 		padding: 0.75rem;
 		background: #4a90e2;
 		color: white;
@@ -404,17 +402,12 @@
 		background: #e8f5e9;
 		border: 1px solid #66bb6a;
 		border-radius: 6px;
-		color: #2e7d32;
-	}
-
-	.success ul {
-		margin: 0.5rem 0;
-		padding-left: 1.5rem;
 	}
 
 	.download-list {
+		margin: 0.5rem 0;
 		list-style: none;
-		padding-left: 0;
+		padding-left: 1rem;
 	}
 
 	.download-list li {
@@ -430,7 +423,7 @@
 		justify-content: center;
 		width: 28px;
 		height: 28px;
-		background: #1565c0;
+		background: oklch(0.5134 0.1603 255.67);
 		border-radius: 4px;
 		transition: background 0.2s;
 	}
@@ -502,10 +495,12 @@
 
 	.zip-button {
 		background: #2e7d32;
+		text-decoration: none;
 	}
 
 	.zip-button:hover {
 		background: #1b5e20;
+		text-decoration: underline;
 	}
 
 	.info {
