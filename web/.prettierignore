@@ -1,0 +1,18 @@
+# Build outputs
+.svelte-kit/
+build/
+dist/
+
+# Dependencies
+node_modules/
+
+# Lock files
+bun.lockb
+package-lock.json
+
+# Generated files
+*.wasm
+wasm_exec.js
+
+# System files
+.DS_Store
