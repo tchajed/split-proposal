@@ -3,6 +3,7 @@
 	import { format } from 'date-fns';
 	import { loadWasm, splitPdf, type SplitOutput } from '$lib/wasm';
 	import uploadIcon from '$lib/assets/upload-icon.svg';
+	import downloadIcon from '$lib/assets/download-icon.svg';
 
 	interface DownloadItem {
 		name: string;
@@ -28,7 +29,7 @@
 	function getZipFileName(): string {
 		let name = zipBaseName || 'download';
 		if (includeDateTime && fileModifiedDate) {
-			name = `${name} ${format(fileModifiedDate, 'yyyy-MM-dd HH:mm')}`;
+			name = `${name} ${format(fileModifiedDate, 'yyyy-MM-dd HH_mm')}`;
 		}
 		return `${name}.zip`;
 	}
@@ -174,7 +175,15 @@
 				<li></li>
 				{#each splitResults.downloads as download}
 					<li>
-						<a href={download.url} download={download.name} class="download-link">
+						<a
+							href={download.url}
+							download={download.name}
+							class="download-button"
+							title="Download"
+						>
+							<img src={downloadIcon} alt="Download" class="download-icon" />
+						</a>
+						<a href={download.url} class="download-link">
 							{download.name}
 						</a>
 						<span class="page-info"
@@ -413,6 +422,27 @@
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
+	}
+
+	.download-button {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 28px;
+		height: 28px;
+		background: #1565c0;
+		border-radius: 4px;
+		transition: background 0.2s;
+	}
+
+	.download-button:hover {
+		background: #0d47a1;
+	}
+
+	.download-icon {
+		width: 16px;
+		height: 16px;
+		filter: brightness(0) invert(1);
 	}
 
 	.download-link {
