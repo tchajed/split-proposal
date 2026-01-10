@@ -242,8 +242,13 @@
 			Project Description, References.
 		</p>
 		<p>
+			<span style="font-weight: bold">Privacy:</span> this tool runs entirely locally. Your PDF is never
+			shared with the server.
+		</p>
+		<div class="divider"></div>
+		<p>
 			For best results, add <code>\pdfbookmark</code> commands to your LaTeX source, which the tool uses
-			to identify section page ranges:
+			to identify section page ranges.
 		</p>
 		<ul>
 			<li>
@@ -263,10 +268,11 @@
 			</li>
 		</ul>
 		<p>
-			See this
+			Without bookmarks, your project description is assumed to be 15 pages. See this
 			<a href="https://github.com/tchajed/split-proposal/blob/main/sample/main.tex">sample file</a> for
 			a complete example.
 		</p>
+		<div class="divider"></div>
 		<p>You can also use this from the command line:</p>
 		<pre class="code">go run github.com/tchajed/split-proposal@latest -file main.pdf</pre>
 		<p>
@@ -557,5 +563,9 @@
 		border-radius: 4px;
 		font-family: 'Bitstream Vera Sans Mono', 'Courier New', monospace;
 		font-size: 0.9em;
+	}
+
+	.divider {
+		border-bottom: 2px solid #e0e0e0;
 	}
 </style>
