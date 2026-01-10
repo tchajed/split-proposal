@@ -267,6 +267,12 @@
 			<a href="https://github.com/tchajed/split-proposal/blob/main/sample/main.tex">sample file</a> for
 			a complete example.
 		</p>
+		<p>You can also use this from the command line:</p>
+		<pre class="code">go run github.com/tchajed/split-proposal@latest -file main.pdf</pre>
+		<p>
+			For more information, visit the
+			<a href="https://github.com/tchajed/split-proposal">GitHub repository</a>.
+		</p>
 	</div>
 </main>
 
@@ -542,5 +548,14 @@
 
 	.info a:hover {
 		text-decoration: underline;
+	}
+
+	pre.code {
+		background: #f5f5f5;
+		padding: 1rem;
+		border: 1px solid #e0e0e0;
+		border-radius: 4px;
+		font-family: 'Bitstream Vera Sans Mono', 'Courier New', monospace;
+		font-size: 0.9em;
 	}
 </style>
