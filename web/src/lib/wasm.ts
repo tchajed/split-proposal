@@ -4,6 +4,8 @@
  * Handles loading the Go WASM runtime and the split-proposal WASM module.
  */
 
+import { asset } from '$app/paths';
+
 let wasmLoaded = false;
 let wasmLoadPromise: Promise<void> | null = null;
 
@@ -23,7 +25,7 @@ export function loadWasm(): Promise<void> {
 async function doLoadWasm(): Promise<void> {
 	// Load wasm_exec.js
 	const script = document.createElement('script');
-	script.src = '/wasm_exec.js';
+	script.src = asset('/wasm_exec.js');
 
 	await new Promise<void>((resolve, reject) => {
 		script.onload = () => resolve();
@@ -45,7 +47,7 @@ async function doLoadWasm(): Promise<void> {
 
 	// Load and instantiate the WASM module
 	const result = await WebAssembly.instantiateStreaming(
-		fetch('/split-proposal.wasm'),
+		fetch(asset('/split-proposal.wasm')),
 		go.importObject
 	);
 
