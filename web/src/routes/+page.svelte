@@ -4,6 +4,7 @@
 	import { loadWasm, splitPdf } from '$lib/wasm';
 	import uploadIcon from '$lib/assets/upload-icon.svg';
 	import downloadIcon from '$lib/assets/download-icon.svg';
+	import favicon from '$lib/assets/logo.png';
 
 	interface DownloadItem {
 		name: string;
@@ -148,7 +149,12 @@
 </svelte:head>
 
 <main>
-	<h1>Split NSF Proposal</h1>
+	<h1>
+		<div style="display: flex; align-items: center; gap: 1rem">
+			<img src={favicon} alt="Split NSF Proposal Logo" width="70" height="70" />
+			Split NSF Proposal
+		</div>
+	</h1>
 	<p class="subtitle">Split a proposal PDF into submission documents</p>
 
 	{#if error}
