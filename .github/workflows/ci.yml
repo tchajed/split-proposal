@@ -35,6 +35,9 @@ jobs:
 
   frontend:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
     steps:
       - uses: actions/checkout@v6
       - name: Set up Go
@@ -42,18 +45,14 @@ jobs:
         with:
           go-version-file: go.mod
       - name: Build wasm
-        run: ./web/scripts/build.sh
+        run: ./scripts/build.sh
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
       - name: Install dependencies
         run: bun install
-        working-directory: web
       - name: Check
         run: bun run check
-        working-directory: web
       - name: Check formatting
         run: bun run format:check
-        working-directory: web
       - name: Build
         run: bun run build
-        working-directory: web
