@@ -9,6 +9,13 @@ declare global {
 		// interface Platform {}
 	}
 
+	interface SplitResult {
+		name: string;
+		startPage: number;
+		endPage: number;
+		data: Uint8Array;
+	}
+
 	interface Window {
 		Go: new () => {
 			importObject: WebAssembly.Imports;
@@ -16,12 +23,7 @@ declare global {
 		};
 		splitPdf: (data: Uint8Array) => {
 			error?: string;
-			results?: Array<{
-				name: string;
-				startPage: number;
-				endPage: number;
-				data: Uint8Array;
-			}>;
+			results?: Array<SplitResult>;
 		};
 		wasmReady: () => void;
 	}

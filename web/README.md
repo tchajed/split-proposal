@@ -6,46 +6,29 @@ A SvelteKit-based web interface for splitting NSF proposal PDFs into submission 
 
 - Drag-and-drop PDF upload
 - Browser-based PDF processing using WebAssembly
-- Automatic download of split files
-- No server-side processing required
+- Automatically determine where to split based on PDF bookmarks.
 
 ## Development
 
+Run `./scripts/build.sh` to build the WASM module and copy `wasm_exec.js` from the Go distribution.
+
 ```bash
 # Install dependencies
-npm install
+bun install
 
 # Start dev server
-npm run dev
+bun run dev
 
 # Build for production
-npm run build
+bun run build
 
 # Preview production build
-npm run preview
-```
-
-## Rebuilding the WASM module
-
-If you modify the Go code, rebuild the WASM module from the project root:
-
-```bash
-cd ..
-GOOS=js GOARCH=wasm go build -o web/static/split-proposal.wasm
-```
-
-The `wasm_exec.js` file is copied from Go's standard library and is needed to run Go WASM in the browser. If you need to update it for a new Go version:
-
-```bash
-cp "$(go env GOROOT)/lib/wasm/wasm_exec.js" web/static/
+bun run preview
 ```
 
 ## How it works
 
-1. The Go split-proposal tool is compiled to WebAssembly
-2. The WASM module is loaded in the browser
-3. PDF files are processed entirely client-side
-4. Split files are automatically downloaded
+The Go split-proposal tool is compiled to WebAssembly, and the main splitting function is exposed as a JavaScript function. This requires a small JavaScript runtime provided by Go (`wasm_exec.js`). This means all processing is done in the browser, and the server just serves static files.
 
 ## Testing
 

@@ -1,10 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-
-	interface SplitResult {
-		name: string;
-		data: Uint8Array;
-	}
+	import { loadWasm, splitPdf } from '$lib/wasm';
 
 	let wasmReady = $state(false);
 	let processing = $state(false);
@@ -12,31 +8,20 @@
 	let isDragging = $state(false);
 	let results = $state<SplitResult[]>([]);
 
+	function prettyRange(start: number, end: number): string {
+		if (start === end) {
+			return `${start}`;
+		}
+		if (end < 0) {
+			return `${start}-end`;
+		}
+		return `${start}-${end}`;
+	}
+
 	onMount(async () => {
-		// Load wasm_exec.js
-		const script = document.createElement('script');
-		script.src = '/wasm_exec.js';
-
-		await new Promise((resolve, reject) => {
-			script.onload = resolve;
-			script.onerror = reject;
-			document.head.appendChild(script);
-		});
-
-		// Initialize the Go WASM runtime
-		const go = new window.Go();
-
-		window.wasmReady = () => {
-			wasmReady = true;
-			console.log('WASM module loaded successfully');
-		};
-
 		try {
-			const result = await WebAssembly.instantiateStreaming(
-				fetch('/split-proposal.wasm'),
-				go.importObject
-			);
-			go.run(result.instance);
+			await loadWasm();
+			wasmReady = true;
 		} catch (err) {
 			console.error('Failed to load WASM:', err);
 			error = 'Failed to load WASM module: ' + (err instanceof Error ? err.message : String(err));
@@ -92,17 +77,11 @@
 			const uint8Array = new Uint8Array(arrayBuffer);
 
 			// Call the WASM function
-			const result = window.splitPdf(uint8Array);
+			results = splitPdf(uint8Array);
 
-			if (result.error) {
-				error = result.error;
-			} else if (result.results) {
-				results = result.results;
-
-				// Automatically download all files
-				for (const splitFile of results) {
-					downloadFile(splitFile.name, splitFile.data);
-				}
+			// Automatically download all files
+			for (const splitFile of results) {
+				downloadFile(splitFile.name, splitFile.data);
 			}
 		} catch (err) {
 			console.error('Error processing file:', err);
@@ -187,7 +166,7 @@
 				<p>Downloaded {results.length} file{results.length > 1 ? 's' : ''}:</p>
 				<ul>
 					{#each results as result}
-						<li>{result.name}</li>
+						<li>{result.name} (pages {prettyRange(result.startPage, result.endPage)})</li>
 					{/each}
 				</ul>
 			</div>
