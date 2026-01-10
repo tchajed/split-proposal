@@ -74,35 +74,29 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
     steps:
       - uses: actions/checkout@v6
-
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
-
       - name: Build wasm
-        run: ./web/scripts/build.sh
-
+        run: ./scripts/build.sh
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
-
       - name: Install dependencies
-        working-directory: web
         run: bun install
-
       - name: Build
-        working-directory: web
         env:
           BASE_PATH: "/${{ github.event.repository.name }}"
         run: bun run build
-
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: web/build
-
+          path: ./build
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
