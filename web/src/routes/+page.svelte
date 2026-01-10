@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { format } from 'date-fns';
 	import { loadWasm, splitPdf, type SplitOutput } from '$lib/wasm';
 	import uploadIcon from '$lib/assets/upload-icon.svg';
 
@@ -13,7 +14,6 @@
 	interface SplitResults {
 		downloads: DownloadItem[];
 		zipUrl: string;
-		zipName: string;
 	}
 
 	let wasmReady = $state(false);
@@ -21,6 +21,17 @@
 	let error = $state<string | null>(null);
 	let isDragging = $state(false);
 	let splitResults = $state<SplitResults | null>(null);
+	let zipBaseName = $state('');
+	let includeDateTime = $state(false);
+	let fileModifiedDate = $state<Date | null>(null);
+
+	function getZipFileName(): string {
+		let name = zipBaseName || 'download';
+		if (includeDateTime && fileModifiedDate) {
+			name = `${name} ${format(fileModifiedDate, 'yyyy-MM-dd HH:mm')}`;
+		}
+		return `${name}.zip`;
+	}
 
 	function prettyRange(start: number, end: number): string {
 		if (start === end) {
@@ -102,7 +113,8 @@
 
 			// Derive zip name from input filename
 			const baseName = file.name.replace(/\.pdf$/i, '');
-			const zipFileName = `${baseName}.zip`;
+			zipBaseName = baseName;
+			fileModifiedDate = new Date(file.lastModified);
 
 			// Call the WASM function
 			const output = splitPdf(uint8Array);
@@ -119,8 +131,7 @@
 				})),
 				zipUrl: URL.createObjectURL(
 					new Blob([output.zipFile as BlobPart], { type: 'application/zip' })
-				),
-				zipName: zipFileName
+				)
 			};
 		} catch (err) {
 			console.error('Error processing file:', err);
@@ -138,6 +149,43 @@
 <main>
 	<h1>Split NSF Proposal</h1>
 	<p class="subtitle">Split a proposal PDF into submission documents</p>
+
+	{#if error}
+		<div class="error">{error}</div>
+	{/if}
+
+	{#if splitResults}
+		<div class="success">
+			<div class="zip-options">
+				<div class="zip-filename-row">
+					<label for="zip-name">download name:</label>
+					<input type="text" id="zip-name" bind:value={zipBaseName} class="zip-name-input" />
+					<span class="zip-ext">.zip</span>
+				</div>
+				<label class="checkbox-label">
+					<input type="checkbox" bind:checked={includeDateTime} />
+					Add timestamp to filename
+				</label>
+			</div>
+			<a href={splitResults.zipUrl} download={getZipFileName()} class="button zip-button">
+				Download all ({getZipFileName()})
+			</a>
+			<ul class="download-list">
+				<li></li>
+				{#each splitResults.downloads as download}
+					<li>
+						<a href={download.url} download={download.name} class="download-link">
+							{download.name}
+						</a>
+						<span class="page-info"
+							>(page{download.startPage == download.endPage ? '' : 's'}
+							{prettyRange(download.startPage, download.endPage)})</span
+						>
+					</li>
+				{/each}
+			</ul>
+		</div>
+	{/if}
 
 	<div
 		class="drop-zone"
@@ -173,34 +221,6 @@
 			</div>
 		{/if}
 	</div>
-
-	{#if error}
-		<div class="error">{error}</div>
-	{/if}
-
-	{#if splitResults}
-		<div class="success">
-			<h2>Successfully split PDF!</h2>
-			<a href={splitResults.zipUrl} download={splitResults.zipName} class="button zip-button">
-				Download all ({splitResults.zipName})
-			</a>
-			<p>or download individual files:</p>
-			<ul class="download-list">
-				<li></li>
-				{#each splitResults.downloads as download}
-					<li>
-						<a href={download.url} download={download.name} class="download-link">
-							{download.name}
-						</a>
-						<span class="page-info"
-							>(page{download.startPage == download.endPage ? '' : 's'}
-							{prettyRange(download.startPage, download.endPage)})</span
-						>
-					</li>
-				{/each}
-			</ul>
-		</div>
-	{/if}
 
 	<div class="info">
 		<p>
@@ -265,6 +285,7 @@
 
 	.drop-zone {
 		border: 3px dashed #ccc;
+		margin-top: 1rem;
 		border-radius: 12px;
 		padding: 3rem;
 		text-align: center;
@@ -377,11 +398,6 @@
 		color: #2e7d32;
 	}
 
-	.success h2 {
-		margin-top: 0;
-		font-size: 1.3rem;
-	}
-
 	.success ul {
 		margin: 0.5rem 0;
 		padding-left: 1.5rem;
@@ -414,6 +430,46 @@
 		font-size: 0.9em;
 	}
 
+	.zip-options {
+		margin-bottom: 1rem;
+	}
+
+	.zip-filename-row {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-bottom: 0.5rem;
+	}
+
+	.zip-filename-row label {
+		font-weight: 500;
+	}
+
+	.zip-name-input {
+		padding: 0.4rem 0.6rem;
+		border: 1px solid #66bb6a;
+		border-radius: 4px;
+		font-size: 1rem;
+		width: 200px;
+	}
+
+	.zip-ext {
+		color: #666;
+	}
+
+	.checkbox-label {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		cursor: pointer;
+	}
+
+	.checkbox-label input[type='checkbox'] {
+		width: 16px;
+		height: 16px;
+		cursor: pointer;
+	}
+
 	.zip-button {
 		background: #2e7d32;
 	}
@@ -423,16 +479,11 @@
 	}
 
 	.info {
-		margin-top: 3rem;
+		margin-top: 2rem;
 		padding: 1.5rem;
 		background: white;
 		border-radius: 8px;
 		border: 1px solid #e0e0e0;
-	}
-
-	.info h3 {
-		margin-top: 0;
-		color: #333;
 	}
 
 	.info p {
