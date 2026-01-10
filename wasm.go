@@ -5,7 +5,6 @@ package main
 import (
 	"archive/zip"
 	"bytes"
-	"path"
 	"syscall/js"
 
 	"github.com/pdfcpu/pdfcpu/pkg/api"
@@ -17,13 +16,11 @@ func init() {
 }
 
 // resultsToZipFile creates a zip file containing the split PDFs.
-//
-// The zip file has a single directory outerDir that contains all PDFs.
-func resultsToZipFile(outerDir string, results []SplitResult) []byte {
+func resultsToZipFile(results []SplitResult) []byte {
 	var out bytes.Buffer
 	zipFile := zip.NewWriter(&out)
 	for _, result := range results {
-		file, err := zipFile.Create(path.Join(outerDir, result.Name))
+		file, err := zipFile.Create(result.Name)
 		if err != nil {
 			panic(err)
 		}
@@ -44,9 +41,9 @@ func bytesToJs(data []byte) js.Value {
 }
 
 func splitPdfWasmWrapper(this js.Value, args []js.Value) any {
-	if len(args) != 2 {
+	if len(args) != 1 {
 		obj := newObject()
-		obj.Set("error", "expected 2 arguments (Uint8Array, string)")
+		obj.Set("error", "expected 1 argument (Uint8Array)")
 		return obj
 	}
 
@@ -55,9 +52,6 @@ func splitPdfWasmWrapper(this js.Value, args []js.Value) any {
 	length := inputArray.Get("length").Int()
 	pdfData := make([]byte, length)
 	js.CopyBytesToGo(pdfData, inputArray)
-
-	// Get the zipName from JavaScript
-	zipName := args[1].String()
 
 	// Split the PDF
 	results, err := splitPdfBytes(pdfData)
@@ -81,7 +75,7 @@ func splitPdfWasmWrapper(this js.Value, args []js.Value) any {
 	}
 
 	// Create the zip file
-	zipFile := bytesToJs(resultsToZipFile(zipName, results))
+	zipFile := bytesToJs(resultsToZipFile(results))
 
 	// Return object with results
 	returnObj := newObject()

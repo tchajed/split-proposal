@@ -63,20 +63,25 @@ export function isWasmReady(): boolean {
 	return wasmLoaded;
 }
 
+export interface SplitOutput {
+	results: SplitResult[];
+	zipFile: Uint8Array;
+}
+
 /**
  * Split a PDF file into its component parts.
  * Throws if the WASM module is not loaded.
  */
-export function splitPdf(data: Uint8Array, zipName: string): SplitResult[] {
+export function splitPdf(data: Uint8Array): SplitOutput {
 	if (!wasmLoaded) {
 		throw new Error('WASM module not loaded. Call loadWasm() first.');
 	}
 
-	const result = window.splitPdf(data, zipName);
+	const result = window.splitPdf(data);
 
 	if ('error' in result) {
 		throw new Error(result.error);
 	}
 
-	return result.results;
+	return result;
 }

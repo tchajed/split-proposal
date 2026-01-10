@@ -21,10 +21,7 @@ declare global {
 			importObject: WebAssembly.Imports;
 			run: (instance: WebAssembly.Instance) => void;
 		};
-		splitPdf: (
-			data: Uint8Array,
-			zipName: string
-		) =>
+		splitPdf: (data: Uint8Array) =>
 			| { error: string }
 			| {
 					results: Array<SplitResult>;

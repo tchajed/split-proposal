@@ -1,12 +1,26 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { loadWasm, splitPdf } from '$lib/wasm';
+	import { loadWasm, splitPdf, type SplitOutput } from '$lib/wasm';
+	import uploadIcon from '$lib/assets/upload-icon.svg';
+
+	interface DownloadItem {
+		name: string;
+		url: string;
+		startPage: number;
+		endPage: number;
+	}
+
+	interface SplitResults {
+		downloads: DownloadItem[];
+		zipUrl: string;
+		zipName: string;
+	}
 
 	let wasmReady = $state(false);
 	let processing = $state(false);
 	let error = $state<string | null>(null);
 	let isDragging = $state(false);
-	let results = $state<SplitResult[]>([]);
+	let splitResults = $state<SplitResults | null>(null);
 
 	function prettyRange(start: number, end: number): string {
 		if (start === end) {
@@ -56,6 +70,16 @@
 		}
 	}
 
+	function cleanupUrls() {
+		if (splitResults) {
+			for (const download of splitResults.downloads) {
+				URL.revokeObjectURL(download.url);
+			}
+			URL.revokeObjectURL(splitResults.zipUrl);
+			splitResults = null;
+		}
+	}
+
 	async function processFile(file: File) {
 		if (!wasmReady) {
 			error = 'WASM module not ready yet. Please wait...';
@@ -69,38 +93,41 @@
 
 		processing = true;
 		error = null;
-		results = [];
+		cleanupUrls();
 
 		try {
 			// Read file as ArrayBuffer
 			const arrayBuffer = await file.arrayBuffer();
 			const uint8Array = new Uint8Array(arrayBuffer);
 
-			// Call the WASM function
-			results = splitPdf(uint8Array);
+			// Derive zip name from input filename
+			const baseName = file.name.replace(/\.pdf$/i, '');
+			const zipFileName = `${baseName}.zip`;
 
-			// Automatically download all files
-			for (const splitFile of results) {
-				downloadFile(splitFile.name, splitFile.data);
-			}
+			// Call the WASM function
+			const output = splitPdf(uint8Array);
+
+			// Create blob URLs for results
+			splitResults = {
+				downloads: output.results.map((result) => ({
+					name: result.name,
+					url: URL.createObjectURL(
+						new Blob([result.data as BlobPart], { type: 'application/pdf' })
+					),
+					startPage: result.startPage,
+					endPage: result.endPage
+				})),
+				zipUrl: URL.createObjectURL(
+					new Blob([output.zipFile as BlobPart], { type: 'application/zip' })
+				),
+				zipName: zipFileName
+			};
 		} catch (err) {
 			console.error('Error processing file:', err);
 			error = 'Error processing file: ' + (err instanceof Error ? err.message : String(err));
 		} finally {
 			processing = false;
 		}
-	}
-
-	function downloadFile(filename: string, uint8Array: Uint8Array) {
-		const blob = new Blob([uint8Array as BlobPart], { type: 'application/pdf' });
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = filename;
-		document.body.appendChild(a);
-		a.click();
-		document.body.removeChild(a);
-		URL.revokeObjectURL(url);
 	}
 </script>
 
@@ -112,86 +139,86 @@
 	<h1>Split Proposal</h1>
 	<p class="subtitle">Split NSF proposal PDFs into submission documents</p>
 
-	{#if !wasmReady}
-		<div class="loading">Loading WASM module...</div>
-	{:else}
-		<div
-			class="drop-zone"
-			class:dragging={isDragging}
-			ondragover={handleDragOver}
-			ondragleave={handleDragLeave}
-			ondrop={handleDrop}
-			role="button"
-			tabindex="0"
-		>
-			{#if processing}
-				<div class="processing">
-					<div class="spinner"></div>
-					<p>Processing PDF...</p>
-				</div>
-			{:else}
-				<div class="drop-content">
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="64"
-						height="64"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					>
-						<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-						<polyline points="17 8 12 3 7 8"></polyline>
-						<line x1="12" y1="3" x2="12" y2="15"></line>
-					</svg>
-					<p class="main-text">Drag and drop your PDF here</p>
-					<p class="sub-text">or</p>
-					<label class="file-label">
-						<input type="file" accept=".pdf" onchange={handleFileInput} disabled={processing} />
-						<span class="button">Choose File</span>
-					</label>
-				</div>
-			{/if}
-		</div>
-
-		{#if error}
-			<div class="error">{error}</div>
-		{/if}
-
-		{#if results.length > 0}
-			<div class="success">
-				<h2>Successfully split PDF!</h2>
-				<p>Downloaded {results.length} file{results.length > 1 ? 's' : ''}:</p>
-				<ul>
-					{#each results as result}
-						<li>{result.name} (pages {prettyRange(result.startPage, result.endPage)})</li>
-					{/each}
-				</ul>
+	<div
+		class="drop-zone"
+		class:dragging={isDragging}
+		class:disabled={!wasmReady}
+		ondragover={wasmReady ? handleDragOver : undefined}
+		ondragleave={wasmReady ? handleDragLeave : undefined}
+		ondrop={wasmReady ? handleDrop : undefined}
+		role="button"
+		tabindex={wasmReady ? 0 : -1}
+	>
+		{#if processing}
+			<div class="processing">
+				<div class="spinner"></div>
+				<p>Processing PDF...</p>
+			</div>
+		{:else}
+			<div class="drop-content">
+				<img src={uploadIcon} alt="Upload" class="upload-icon" />
+				<p class="main-text">Drag and drop your PDF here</p>
+				<p class="sub-text">or</p>
+				<label class="file-label">
+					<input
+						type="file"
+						accept=".pdf"
+						onchange={handleFileInput}
+						disabled={!wasmReady || processing}
+					/>
+					<span class="button">Choose File</span>
+				</label>
 			</div>
 		{/if}
+	</div>
 
-		<div class="info">
-			<h3>How it works</h3>
-			<p>
-				This tool splits an NSF proposal PDF into separate submission documents. It uses PDF
-				bookmarks to identify sections:
-			</p>
-			<ul>
-				<li>Project Summary (default: page 1)</li>
-				<li>Project Description (default: pages 2-16)</li>
-				<li>References Cited (default: pages 17-end)</li>
-				<li>Data Management Plan (if present)</li>
-				<li>Mentoring Plan (if present)</li>
+	{#if error}
+		<div class="error">{error}</div>
+	{/if}
+
+	{#if splitResults}
+		<div class="success">
+			<h2>Successfully split PDF!</h2>
+			<a href={splitResults.zipUrl} download={splitResults.zipName} class="button zip-button">
+				Download all ({splitResults.zipName})
+			</a>
+			<p>or download individual files:</p>
+			<ul class="download-list">
+				<li></li>
+				{#each splitResults.downloads as download}
+					<li>
+						<a href={download.url} download={download.name} class="download-link">
+							{download.name}
+						</a>
+						<span class="page-info"
+							>(page{download.startPage == download.endPage ? '' : 's'}
+							{prettyRange(download.startPage, download.endPage)})</span
+						>
+					</li>
+				{/each}
 			</ul>
-			<p>
-				For best results, add <code>\pdfbookmark</code> commands to your LaTeX source. See the
-				<a href="https://github.com/tchajed/split-proposal" target="_blank">GitHub repository</a>
-				for details.
-			</p>
 		</div>
 	{/if}
+
+	<div class="info">
+		<h3>How it works</h3>
+		<p>
+			This tool splits an NSF proposal PDF into separate submission documents. It uses PDF
+			bookmarks to identify sections:
+		</p>
+		<ul>
+			<li>Project Summary (default: page 1)</li>
+			<li>Project Description (default: pages 2-16)</li>
+			<li>References Cited (default: pages 17-end)</li>
+			<li>Data Management Plan (if present)</li>
+			<li>Mentoring Plan (if present)</li>
+		</ul>
+		<p>
+			For best results, add <code>\pdfbookmark</code> commands to your LaTeX source. See the
+			<a href="https://github.com/tchajed/split-proposal" target="_blank">GitHub repository</a>
+			for details.
+		</p>
+	</div>
 </main>
 
 <style>
@@ -221,13 +248,6 @@
 		margin-bottom: 2rem;
 	}
 
-	.loading {
-		text-align: center;
-		padding: 3rem;
-		font-size: 1.2rem;
-		color: #666;
-	}
-
 	.drop-zone {
 		border: 3px dashed #ccc;
 		border-radius: 12px;
@@ -253,13 +273,21 @@
 		transform: scale(1.02);
 	}
 
+	.drop-zone.disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+		pointer-events: none;
+	}
+
 	.drop-content {
 		width: 100%;
 	}
 
-	.drop-content svg {
-		color: #999;
+	.upload-icon {
+		width: 64px;
+		height: 64px;
 		margin-bottom: 1rem;
+		opacity: 0.5;
 	}
 
 	.main-text {
@@ -341,6 +369,41 @@
 	.success ul {
 		margin: 0.5rem 0;
 		padding-left: 1.5rem;
+	}
+
+	.download-list {
+		list-style: none;
+		padding-left: 0;
+	}
+
+	.download-list li {
+		margin: 0.5rem 0;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.download-link {
+		color: #1565c0;
+		text-decoration: none;
+		font-weight: 500;
+	}
+
+	.download-link:hover {
+		text-decoration: underline;
+	}
+
+	.page-info {
+		color: #666;
+		font-size: 0.9em;
+	}
+
+	.zip-button {
+		background: #2e7d32;
+	}
+
+	.zip-button:hover {
+		background: #1b5e20;
 	}
 
 	.info {
