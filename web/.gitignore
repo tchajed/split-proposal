@@ -8,9 +8,7 @@ node_modules
 /.svelte-kit
 /build
 
-# Compiled
-*.wasm
-# copied from Go
+# copied from Go distribution
 static/wasm_exec.js
 
 # OS
