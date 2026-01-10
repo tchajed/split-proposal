@@ -34,6 +34,7 @@ The Go split-proposal tool is compiled to WebAssembly, and the main splitting fu
 
 You can test the application with the sample PDF:
 
-- Navigate to http://localhost:5173
+- Build the WASM code with `./scripts/build.sh`
+- Run the dev server with `bun run dev`
+- Navigate to <http://localhost:5173>
 - Drag and drop `../sample/main.pdf` onto the drop zone
-- The PDF will be split and downloaded automatically
