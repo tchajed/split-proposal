@@ -32,8 +32,7 @@ jobs:
           gofmt -w -s .
           git diff --exit-code
       - name: Build wasm
-        run: |
-          GOOS=js GOARCH=wasm go build -o split-proposal.wasm
+        run: make
       - name: Build LaTeX
         uses: xu-cheng/latex-action@v4
         with:
@@ -54,8 +53,6 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
-      - name: Build wasm
-        run: ./scripts/build.sh
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
       - name: Install dependencies
@@ -83,8 +80,6 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
-      - name: Build wasm
-        run: ./scripts/build.sh
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
       - name: Install dependencies
