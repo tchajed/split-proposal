@@ -13,7 +13,7 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
-    "wasm": "make -C .."
+		"wasm": "make -C .."
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-static": "^3.0.10",
