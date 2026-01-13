@@ -148,53 +148,61 @@
 	<title>Split NSF proposal</title>
 </svelte:head>
 
-<main>
-	<h1>
-		<div style="display: flex; align-items: center; gap: 1rem">
+<main class="mx-auto max-w-3xl p-8">
+	<h1 class="mb-2 text-4xl text-gray-800">
+		<div class="flex items-center gap-4">
 			<img src={favicon} alt="Split NSF Proposal Logo" width="70" height="70" />
 			Split NSF Proposal
 		</div>
 	</h1>
-	<p class="subtitle">Split a proposal PDF into submission documents</p>
+	<p class="mb-8 text-xl text-gray-500">Split a proposal PDF into submission documents</p>
 
 	{#if error}
-		<div class="error">{error}</div>
+		<div class="mt-4 rounded-md border border-red-400 bg-red-50 p-4 text-red-800">
+			{error}
+		</div>
 	{/if}
 
 	{#if splitResults}
-		<div class="success">
-			<div class="zip-options">
-				<div class="zip-filename-row">
-					<label for="zip-name">File name:</label>
-					<input type="text" id="zip-name" bind:value={zipBaseName} class="zip-name-input" />
-					<span class="zip-ext">.zip</span>
+		<div class="mt-4 rounded-md border border-green-400 bg-green-50 p-4">
+			<div class="mb-4">
+				<div class="mb-2 flex items-center gap-2">
+					<label for="zip-name" class="font-medium">File name:</label>
+					<input
+						type="text"
+						id="zip-name"
+						bind:value={zipBaseName}
+						class="field-sizing-content min-w-20 rounded bg-slate-300/30 px-2.5 py-1.5 text-base"
+					/>
+					<span class="text-gray-500">.zip</span>
 				</div>
-				<label class="checkbox-label">
-					<input type="checkbox" bind:checked={includeDateTime} />
+				<label class="flex cursor-pointer items-center gap-2">
+					<input type="checkbox" bind:checked={includeDateTime} class="size-4 cursor-pointer" />
 					Add timestamp
 				</label>
 			</div>
-			<a href={splitResults.zipUrl} download={getZipFileName()} class="button zip-button">
+			<a href={splitResults.zipUrl} download={getZipFileName()} class="btn-success">
 				Download {getZipFileName()}
 			</a>
-			<ul class="download-list">
+			<ul class="my-2 list-none pl-4">
 				{#each splitResults.downloads as download}
-					<li>
+					<li class="my-2 flex items-center gap-2">
 						<a
 							href={download.url}
 							download={download.name}
-							class="download-button"
 							title="Download"
+							class="flex size-7 items-center justify-center rounded
+								bg-blue-600 transition-colors hover:bg-blue-900"
 						>
-							<img src={downloadIcon} alt="Download" class="download-icon" />
+							<img src={downloadIcon} alt="Download" class="size-4 filter-invert" />
 						</a>
-						<a href={download.url} class="download-link">
+						<a href={download.url} class="font-medium text-blue-700 no-underline hover:underline">
 							{download.name}
 						</a>
-						<span class="page-info"
-							>(page{download.startPage == download.endPage ? '' : 's'}
-							{prettyRange(download.startPage, download.endPage)})</span
-						>
+						<span class="text-sm text-gray-500">
+							(page{download.startPage == download.endPage ? '' : 's'}
+							{prettyRange(download.startPage, download.endPage)})
+						</span>
 					</li>
 				{/each}
 			</ul>
@@ -212,360 +220,82 @@
 		tabindex={wasmReady ? 0 : -1}
 	>
 		{#if processing}
-			<div class="processing">
-				<div class="spinner"></div>
+			<div class="text-center">
+				<div
+					class="mx-auto mb-4 size-12 animate-spin rounded-full
+						border-4 border-gray-200 border-t-blue-500"
+				></div>
 				<p>Processing PDF...</p>
 			</div>
 		{:else}
-			<div class="drop-content">
-				<img src={uploadIcon} alt="Upload" class="upload-icon" style="inline-block" />
-				<p class="main-text">Drag and drop your PDF here</p>
-				<p class="sub-text">
+			<div class="w-full">
+				<img src={uploadIcon} alt="Upload" class="mb-4 inline-block size-16 opacity-50" />
+				<p class="mb-2 text-xl text-gray-800">Drag and drop your PDF here</p>
+				<p class="mb-4 text-gray-400">
 					or &nbsp;
-					<label class="file-label">
+					<label>
 						<input
 							type="file"
 							accept=".pdf"
 							onchange={handleFileInput}
 							disabled={!wasmReady || processing}
+							class="hidden"
 						/>
-						<span class="button">Choose File</span>
+						<span class="btn-primary">Choose File</span>
 					</label>
 				</p>
 			</div>
 		{/if}
 	</div>
 
-	<div class="info">
-		<p>
-			This tool splits an NSF proposal PDF into separate submission documents: Project Summary,
-			Project Description, References.
+	<div class="mt-8 rounded-lg border border-gray-200 bg-white p-6">
+		<p class="info-text">
+			This tool splits an NSF proposal PDF into separate submission documents for the summary,
+			description, and references. <span class="font-bold">This runs entirely locally:</span> your PDF
+			is never shared with the server.
 		</p>
-		<p>
-			<span style="font-weight: bold">Privacy:</span> this tool runs entirely locally. Your PDF is never
-			shared with the server.
+		<p class="info-text mt-6">
+			For best results, add <code class="code-inline">\pdfbookmark</code> commands to your LaTeX source,
+			which are used to identify section page ranges.
 		</p>
-		<div class="divider"></div>
-		<p>
-			For best results, add <code>\pdfbookmark</code> commands to your LaTeX source, which the tool uses
-			to identify section page ranges.
-		</p>
-		<ul>
+		<ul class="list-disc pl-5 leading-loose text-gray-500">
 			<li>
-				<code>\pdfbookmark[0]&#123;Project Description&#125;&#123;Project Description&#125;</code> before
-				the project description
+				<code class="code-inline"
+					>\pdfbookmark[0]&#123;Project Description&#125;&#123;Project Description&#125;</code
+				> before the project description
 			</li>
 			<li>
-				<code>\pdfbookmark[0]&#123;References cited&#125;&#123;References cited&#125;</code> before references
+				<code class="code-inline"
+					>\pdfbookmark[0]&#123;References cited&#125;&#123;References cited&#125;</code
+				> before references
 			</li>
 			<li>
-				(optional) <code
+				(optional)
+				<code class="code-inline"
 					>\pdfbookmark[0]&#123;Data management plan&#125;&#123;Data management plan&#125;</code
 				>
 			</li>
 			<li>
-				(optional) <code>\pdfbookmark[0]&#123;Mentoring plan&#125;&#123;Mentoring plan&#125;</code>
+				(optional)
+				<code class="code-inline"
+					>\pdfbookmark[0]&#123;Mentoring plan&#125;&#123;Mentoring plan&#125;</code
+				>
 			</li>
 		</ul>
-		<p>
+		<p class="info-text">
 			Without bookmarks, your project description is assumed to be 15 pages. See this
-			<a href="https://github.com/tchajed/split-proposal/blob/main/sample/main.tex">sample file</a> for
-			a complete example.
+			<a href="https://github.com/tchajed/split-proposal/blob/main/sample/main.tex">
+				sample file
+			</a>
+			for a complete example.
 		</p>
-		<div class="divider"></div>
-		<p>You can also use this from the command line:</p>
-		<pre class="code">go run github.com/tchajed/split-proposal@latest -file main.pdf</pre>
-		<p>
+		<div class="my-4 border-b-2 border-gray-200"></div>
+		<p class="info-text">You can also use this from the command line:</p>
+		<pre
+			class="my-2 rounded border border-gray-200 bg-gray-100 p-2 font-mono text-sm">go run github.com/tchajed/split-proposal@latest -file main.pdf</pre>
+		<p class="info-text">
 			For more information, visit the
 			<a href="https://github.com/tchajed/split-proposal">GitHub repository</a>.
 		</p>
 	</div>
 </main>
-
-<style>
-	:global(body) {
-		margin: 0;
-		padding: 0;
-		font-family:
-			-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-		background: #f5f5f5;
-	}
-
-	main {
-		max-width: 800px;
-		margin: 0 auto;
-		padding: 2rem;
-	}
-
-	h1 {
-		font-size: 2.5rem;
-		margin-bottom: 0.5rem;
-		color: #333;
-	}
-
-	.subtitle {
-		font-size: 1.2rem;
-		color: #666;
-		margin-bottom: 2rem;
-	}
-
-	.drop-zone {
-		border: 3px dashed #ccc;
-		margin-top: 1rem;
-		border-radius: 12px;
-		padding: 3rem;
-		text-align: center;
-		background: white;
-		transition: all 0.3s ease;
-		cursor: pointer;
-		min-height: 100px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.drop-zone:hover {
-		border-color: #4a90e2;
-		background: #f8f9fa;
-	}
-
-	.drop-zone.dragging {
-		border-color: #4a90e2;
-		background: #e3f2fd;
-		transform: scale(1.02);
-	}
-
-	.drop-zone.disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-		pointer-events: none;
-	}
-
-	.drop-content {
-		width: 100%;
-	}
-
-	.upload-icon {
-		width: 64px;
-		height: 64px;
-		margin-bottom: 1rem;
-		opacity: 0.5;
-	}
-
-	.main-text {
-		font-size: 1.3rem;
-		color: #333;
-		margin-bottom: 0.5rem;
-	}
-
-	.sub-text {
-		color: #999;
-		margin-bottom: 1rem;
-	}
-
-	.file-label input {
-		display: none;
-	}
-
-	.button {
-		display: inline-block;
-		padding: 0.75rem;
-		background: #4a90e2;
-		color: white;
-		border-radius: 6px;
-		cursor: pointer;
-		font-size: 1rem;
-		transition: background 0.2s;
-	}
-
-	.button:hover {
-		background: #357abd;
-	}
-
-	.processing {
-		text-align: center;
-	}
-
-	.spinner {
-		border: 4px solid #f3f3f3;
-		border-top: 4px solid #4a90e2;
-		border-radius: 50%;
-		width: 50px;
-		height: 50px;
-		animation: spin 1s linear infinite;
-		margin: 0 auto 1rem;
-	}
-
-	@keyframes spin {
-		0% {
-			transform: rotate(0deg);
-		}
-		100% {
-			transform: rotate(360deg);
-		}
-	}
-
-	.error {
-		margin-top: 1rem;
-		padding: 1rem;
-		background: #ffebee;
-		border: 1px solid #ef5350;
-		border-radius: 6px;
-		color: #c62828;
-	}
-
-	.success {
-		margin-top: 1rem;
-		padding: 1rem;
-		background: #e8f5e9;
-		border: 1px solid #66bb6a;
-		border-radius: 6px;
-	}
-
-	.download-list {
-		margin: 0.5rem 0;
-		list-style: none;
-		padding-left: 1rem;
-	}
-
-	.download-list li {
-		margin: 0.5rem 0;
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-	}
-
-	.download-button {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 28px;
-		height: 28px;
-		background: oklch(0.5134 0.1603 255.67);
-		border-radius: 4px;
-		transition: background 0.2s;
-	}
-
-	.download-button:hover {
-		background: #0d47a1;
-	}
-
-	.download-icon {
-		width: 16px;
-		height: 16px;
-		filter: brightness(0) invert(1);
-	}
-
-	.download-link {
-		color: #1565c0;
-		text-decoration: none;
-		font-weight: 500;
-	}
-
-	.download-link:hover {
-		text-decoration: underline;
-	}
-
-	.page-info {
-		color: #666;
-		font-size: 0.9em;
-	}
-
-	.zip-options {
-		margin-bottom: 1rem;
-	}
-
-	.zip-filename-row {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		margin-bottom: 0.5rem;
-	}
-
-	.zip-filename-row label {
-		font-weight: 500;
-	}
-
-	.zip-name-input {
-		padding: 0.4rem 0.6rem;
-		border: 1px solid #66bb6a;
-		border-radius: 4px;
-		font-size: 1rem;
-		width: 200px;
-	}
-
-	.zip-ext {
-		color: #666;
-	}
-
-	.checkbox-label {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		cursor: pointer;
-	}
-
-	.checkbox-label input[type='checkbox'] {
-		width: 16px;
-		height: 16px;
-		cursor: pointer;
-	}
-
-	.zip-button {
-		background: #2e7d32;
-		text-decoration: none;
-	}
-
-	.zip-button:hover {
-		background: #1b5e20;
-		text-decoration: underline;
-	}
-
-	.info {
-		margin-top: 2rem;
-		padding: 1.5rem;
-		background: white;
-		border-radius: 8px;
-		border: 1px solid #e0e0e0;
-	}
-
-	.info p {
-		color: #666;
-		line-height: 1.6;
-	}
-
-	.info ul {
-		color: #666;
-		line-height: 1.8;
-	}
-
-	.info code {
-		background: #f5f5f5;
-		padding: 0.2rem 0.4rem;
-		border-radius: 3px;
-		font-family: 'Courier New', monospace;
-		font-size: 0.9em;
-	}
-
-	.info a {
-		color: #4a90e2;
-		text-decoration: none;
-	}
-
-	.info a:hover {
-		text-decoration: underline;
-	}
-
-	pre.code {
-		background: #f5f5f5;
-		padding: 1rem;
-		border: 1px solid #e0e0e0;
-		border-radius: 4px;
-		font-family: 'Bitstream Vera Sans Mono', 'Courier New', monospace;
-		font-size: 0.9em;
-	}
-
-	.divider {
-		border-bottom: 2px solid #e0e0e0;
-	}
-</style>
