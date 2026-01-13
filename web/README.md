@@ -15,14 +15,13 @@ Setup:
 ```bash
 # Install dependencies (only needed once)
 bun install
-# build wasm
-bun wasm
 ```
 
-```sh
-bun run dev
-bun run build
-```
+You can use these commands:
+
+- `bun dev` start a development server
+- `bun wasm` re-compile the wasm module
+- `bun run build` build the site for production
 
 ## How it works
 
