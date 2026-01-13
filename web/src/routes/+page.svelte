@@ -251,7 +251,7 @@
 	<div class="mt-8 rounded-lg border border-gray-200 bg-white p-6">
 		<p class="info-text">
 			This tool splits an NSF proposal PDF into separate submission documents for the summary,
-			description, and references. <span class="font-bold">This runs entirely locally:</span> your PDF
+			description, and references. <span class="font-bold">This runs entirely locally.</span> Your PDF
 			is never shared with the server.
 		</p>
 		<p class="info-text mt-6">
