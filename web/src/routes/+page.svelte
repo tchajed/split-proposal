@@ -5,6 +5,7 @@
 	import uploadIcon from '$lib/assets/upload-icon.svg';
 	import downloadIcon from '$lib/assets/download-icon.svg';
 	import favicon from '$lib/assets/logo.png';
+	import { siGithub } from 'simple-icons';
 
 	interface DownloadItem {
 		name: string;
@@ -248,17 +249,17 @@
 		{/if}
 	</div>
 
-	<div class="mt-8 rounded-lg border border-gray-200 bg-white p-6">
-		<p class="info-text">
+	<div class="mt-8 rounded-lg border border-gray-200 bg-white p-6 leading-relaxed text-gray-500">
+		<p>
 			This tool splits an NSF proposal PDF into separate submission documents for the summary,
 			description, and references. <span class="font-bold">This runs entirely locally.</span> Your PDF
 			is never shared with the server.
 		</p>
-		<p class="info-text mt-6">
+		<p class="mt-6">
 			For best results, add <code class="code-inline">\pdfbookmark</code> commands to your LaTeX source,
 			which are used to identify section page ranges.
 		</p>
-		<ul class="list-disc pl-5 leading-loose text-gray-500">
+		<ul class="my-1 list-disc pl-5 leading-loose text-gray-500">
 			<li>
 				<code class="code-inline"
 					>\pdfbookmark[0]&#123;Project Description&#125;&#123;Project Description&#125;</code
@@ -282,20 +283,28 @@
 				>
 			</li>
 		</ul>
-		<p class="info-text">
+		<p>
 			Without bookmarks, your project description is assumed to be 15 pages. See this
 			<a href="https://github.com/tchajed/split-proposal/blob/main/sample/main.tex">
 				sample file
 			</a>
 			for a complete example.
 		</p>
-		<div class="my-4 border-b-2 border-gray-200"></div>
-		<p class="info-text">You can also use this from the command line:</p>
+		<p class="mt-6">You can also use this from the command line:</p>
 		<pre
 			class="my-2 rounded border border-gray-200 bg-gray-100 p-2 font-mono text-sm">go run github.com/tchajed/split-proposal@latest -file main.pdf</pre>
-		<p class="info-text">
-			For more information, visit the
-			<a href="https://github.com/tchajed/split-proposal">GitHub repository</a>.
-		</p>
+		<div class="mt-6 mb-2 border-t border-gray-200"></div>
+		<div class="flex justify-end">
+			<a
+				href="https://github.com/tchajed/split-proposal"
+				title="View on GitHub"
+				class="flex items-center gap-1.5 text-gray-400 hover:text-gray-600"
+			>
+				<svg role="img" viewBox="0 0 24 24" class="size-5 fill-current">
+					<path d={siGithub.path} />
+				</svg>
+				GitHub repo
+			</a>
+		</div>
 	</div>
 </main>
