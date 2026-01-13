@@ -53,8 +53,6 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
-      - name: Build wasm
-        run: bun wasm
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
       - name: Install dependencies
@@ -63,6 +61,8 @@ jobs:
         run: bun run check
       - name: Check formatting
         run: bun run format:check
+      - name: Build wasm
+        run: bun wasm
       - name: Build
         run: bun run build
 
