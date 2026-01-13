@@ -54,7 +54,7 @@ jobs:
         with:
           go-version-file: go.mod
       - name: Build wasm
-        run: make
+        run: bun wasm
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
       - name: Install dependencies
