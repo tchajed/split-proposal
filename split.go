@@ -123,6 +123,7 @@ var referencesRe = regexp.MustCompile(`(?i)references(\s+cited)?`)
 var dataManagementPlanRe = regexp.MustCompile(`(?i)data\s+management\s+plan?`)
 var mentoringPlanRe = regexp.MustCompile(`(?i)mentoring\s+plan?`)
 var collaborationPlanRe = regexp.MustCompile(`(?i)collaboration\s+plan?`)
+var synergisticActivitiesRe = regexp.MustCompile(`(?i)(?P<name>.+?):\s+synergistic\s+activities`)
 
 func hasSection(titleRe *regexp.Regexp, bookmarks []pdfcpu.Bookmark) bool {
 	for _, b := range bookmarks {
@@ -145,6 +146,31 @@ func bookmarkRange(r *regexp.Regexp, bookmarks []pdfcpu.Bookmark, defaultRange p
 		}
 	}
 	return defaultRange
+}
+
+type bookmarkMatch struct {
+	bookmark pdfcpu.Bookmark
+	index    int
+	name     string
+}
+
+func findAllBookmarks(r *regexp.Regexp, bookmarks []pdfcpu.Bookmark) []bookmarkMatch {
+	var matches []bookmarkMatch
+	for i, b := range bookmarks {
+		if r.MatchString(b.Title) {
+			match := bookmarkMatch{
+				bookmark: b,
+				index:    i,
+			}
+			// Extract the name from the capture group if present
+			submatches := r.FindStringSubmatch(b.Title)
+			if len(submatches) > 1 {
+				match.name = submatches[1]
+			}
+			matches = append(matches, match)
+		}
+	}
+	return matches
 }
 
 type SplitResult struct {
@@ -221,6 +247,45 @@ func splitPdfBytes(pdfData []byte) ([]SplitResult, error) {
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	// Extract all synergistic activities sections
+	synergisticMatches := findAllBookmarks(synergisticActivitiesRe, bookmarks)
+	for idx, match := range synergisticMatches {
+		start := match.bookmark.PageFrom
+		var end int
+		// Determine end page: next bookmark's start - 1, or end of document
+		if match.index == len(bookmarks)-1 {
+			end = -1
+		} else {
+			end = bookmarks[match.index+1].PageFrom - 1
+		}
+
+		r := pageRange{start, end}
+
+		// Reset reader to beginning
+		rs.Seek(0, io.SeekStart)
+
+		buf, err := extractPages(rs, bookmarks, r, conf)
+		if err != nil {
+			return nil, fmt.Errorf("could not extract synergistic activities %d: %w", idx+1, err)
+		}
+
+		// Use the captured name to create a unique filename
+		filename := fmt.Sprintf("synergistic-activities-%d", idx+1)
+		if match.name != "" {
+			// Sanitize the name for use in filename (replace spaces with hyphens, lowercase)
+			sanitized := regexp.MustCompile(`\s+`).ReplaceAllString(match.name, "-")
+			sanitized = regexp.MustCompile(`[^a-zA-Z0-9-]`).ReplaceAllString(sanitized, "")
+			filename = fmt.Sprintf("%s-synergistic-activities", sanitized)
+		}
+
+		results = append(results, SplitResult{
+			Name:      fmt.Sprintf("submit-%s.pdf", filename),
+			Data:      buf.Bytes(),
+			StartPage: r.start,
+			EndPage:   r.end,
+		})
 	}
 
 	return results, nil
