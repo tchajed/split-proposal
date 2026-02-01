@@ -122,6 +122,7 @@ var summaryRe = regexp.MustCompile(`(?i)(project\s+)?summary`)
 var referencesRe = regexp.MustCompile(`(?i)references(\s+cited)?`)
 var dataManagementPlanRe = regexp.MustCompile(`(?i)data\s+management\s+plan?`)
 var mentoringPlanRe = regexp.MustCompile(`(?i)mentoring\s+plan?`)
+var collaborationPlanRe = regexp.MustCompile(`(?i)collaboration\s+plan?`)
 
 func hasSection(titleRe *regexp.Regexp, bookmarks []pdfcpu.Bookmark) bool {
 	for _, b := range bookmarks {
@@ -211,6 +212,12 @@ func splitPdfBytes(pdfData []byte) ([]SplitResult, error) {
 	}
 	if hasSection(mentoringPlanRe, bookmarks) {
 		err = splitSection("mentoring-plan", mentoringPlanRe, pageRange{})
+		if err != nil {
+			return nil, err
+		}
+	}
+	if hasSection(collaborationPlanRe, bookmarks) {
+		err = splitSection("collaboration-plan", collaborationPlanRe, pageRange{})
 		if err != nil {
 			return nil, err
 		}
