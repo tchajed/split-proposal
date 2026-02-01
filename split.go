@@ -120,9 +120,11 @@ func (br pageRange) String() string {
 var descriptionRe = regexp.MustCompile(`(?i)project\s+description`)
 var summaryRe = regexp.MustCompile(`(?i)(project\s+)?summary`)
 var referencesRe = regexp.MustCompile(`(?i)references(\s+cited)?`)
-var dataManagementPlanRe = regexp.MustCompile(`(?i)data\s+management\s+plan?`)
-var mentoringPlanRe = regexp.MustCompile(`(?i)mentoring\s+plan?`)
-var collaborationPlanRe = regexp.MustCompile(`(?i)collaboration\s+plan?`)
+
+// could be "Data Management Plan" or "Data Management and Sharing Plan"
+var dataManagementPlanRe = regexp.MustCompile(`(?i)(data\s+management\b.*\bplan)`)
+var mentoringPlanRe = regexp.MustCompile(`(?i)mentoring\s+plan`)
+var collaborationPlanRe = regexp.MustCompile(`(?i)collaboration\s+plan`)
 var synergisticActivitiesRe = regexp.MustCompile(`(?i)(?P<name>.+?):\s+synergistic\s+activities`)
 
 func hasSection(titleRe *regexp.Regexp, bookmarks []pdfcpu.Bookmark) bool {
