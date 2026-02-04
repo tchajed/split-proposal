@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"os"
 	"regexp"
 
 	"github.com/pdfcpu/pdfcpu/pkg/api"
@@ -119,7 +120,7 @@ func (br pageRange) String() string {
 
 var descriptionRe = regexp.MustCompile(`(?i)project\s+description`)
 var summaryRe = regexp.MustCompile(`(?i)(project\s+)?summary`)
-var referencesRe = regexp.MustCompile(`(?i)references(\s+cited)?`)
+var referencesRe = regexp.MustCompile(`(?i)references\b`)
 
 // could be "Data Management Plan" or "Data Management and Sharing Plan"
 var dataManagementPlanRe = regexp.MustCompile(`(?i)(data\s+management\b.*\bplan)`)
@@ -136,18 +137,18 @@ func hasSection(titleRe *regexp.Regexp, bookmarks []pdfcpu.Bookmark) bool {
 	return false
 }
 
-func bookmarkRange(r *regexp.Regexp, bookmarks []pdfcpu.Bookmark, defaultRange pageRange) pageRange {
+func bookmarkRange(r *regexp.Regexp, bookmarks []pdfcpu.Bookmark) (pageRange, bool) {
 	for i, b := range bookmarks {
 		if r.MatchString(b.Title) {
 			start := b.PageFrom
 			if i == len(bookmarks)-1 {
-				return pageRange{start, -1}
+				return pageRange{start, -1}, true
 			} else {
-				return pageRange{start, bookmarks[i+1].PageFrom - 1}
+				return pageRange{start, bookmarks[i+1].PageFrom - 1}, true
 			}
 		}
 	}
-	return defaultRange
+	return pageRange{-1, 0}, false
 }
 
 type bookmarkMatch struct {
@@ -198,9 +199,10 @@ func splitPdfBytes(pdfData []byte) ([]SplitResult, error) {
 	var results []SplitResult
 
 	splitSection := func(name string, titleRe *regexp.Regexp, defaultRange pageRange) error {
-		r := bookmarkRange(titleRe, bookmarks, defaultRange)
-		if r.start <= 0 {
-			return fmt.Errorf("section %s not found", name)
+		r, ok := bookmarkRange(titleRe, bookmarks)
+		if !ok {
+			r = defaultRange
+			fmt.Fprintf(os.Stderr, "section %s not found (using default)\n", name)
 		}
 
 		// Reset reader to beginning
