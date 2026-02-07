@@ -195,6 +195,11 @@ func splitPdfBytes(pdfData []byte) ([]SplitResult, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not read PDF bookmarks: %w", err)
 	}
+	rs.Seek(0, io.SeekStart)
+	totalPages, err := api.PageCount(rs, conf)
+	if err != nil {
+		return nil, fmt.Errorf("could not get PDF page count: %w", err)
+	}
 
 	var results []SplitResult
 
@@ -290,6 +295,12 @@ func splitPdfBytes(pdfData []byte) ([]SplitResult, error) {
 			StartPage: r.start,
 			EndPage:   r.end,
 		})
+	}
+
+	for i := range results {
+		if results[i].EndPage == -1 {
+			results[i].EndPage = totalPages
+		}
 	}
 
 	return results, nil
