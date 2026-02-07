@@ -38,12 +38,12 @@
 
 	function prettyRange(start: number, end: number): string {
 		if (start === end) {
-			return `${start}`;
+			return `p${start}`;
 		}
 		if (end < 0) {
-			return `${start}-end`;
+			return `p${start}-end`;
 		}
-		return `${start}-${end}`;
+		return `p${start} (${end - start + 1} pages)`;
 	}
 
 	onMount(async () => {
@@ -201,8 +201,7 @@
 							{download.name}
 						</a>
 						<span class="text-sm text-gray-500">
-							(page{download.startPage == download.endPage ? '' : 's'}
-							{prettyRange(download.startPage, download.endPage)})
+							{prettyRange(download.startPage, download.endPage)}
 						</span>
 					</li>
 				{/each}
